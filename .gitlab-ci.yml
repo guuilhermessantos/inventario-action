@@ -1,0 +1,29 @@
+image: node:alpine
+cache:
+  paths:
+    - node_modules/
+    - ~/.npm
+stages:
+  - EXPO PUBLISH
+  - EXPO BUILD
+  - DEPLOY PLAY STORE
+before_script:
+  - echo fs.inotify.max_user_watches=524288 | tee -a /etc/sysctl.conf && sysctl -p
+  - apk add git
+  - yarn install
+expo_publish:
+  stage: EXPO PUBLISH
+  script:
+    - apk add --no-cache bash
+    - yarn expo login -u david896 -p 153045ab
+    - yarn expo publish --non-interactive
+expo_build:
+  stage: EXPO BUILD
+  script:
+    - yarn expo login -u david896 -p 153045ab
+    - yarn expo build:android --non-interactive -t app-bundle
+playstore_production:
+  stage: DEPLOY PLAY STORE
+  script:
+    - yarn expo login -u david896 -p 153045ab
+    - yarn expo upload:android --latest --use-submission-service --track production --key play-store.json
